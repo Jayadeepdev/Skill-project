@@ -18,17 +18,18 @@ def iforest():
     ]
 
     model = IsolationForest(
-        n_estimators=10000,
+        n_estimators=8000,
         contamination=0.5,
         random_state=300
     )
 
     df["behavior_anomaly"] = model.fit_predict(behavior_features)
 
-    joblib.dump(model, "Model/iforest_model.joblib")
+    joblib.dump(model, "PyLog/Model/iforest_model.joblib")
 
-    df.to_csv("Output/final_output.csv", index=False)
+    df.to_csv("data/output/final_output.csv", index=False)
     print("[+] Final output generated")
+    return True
 
 
 if __name__ == "__main__":

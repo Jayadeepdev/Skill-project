@@ -41,10 +41,11 @@ def train():
 
     #SAVE MODEL + SCALER
     
-    joblib.dump(model, "Model/semisup_model.joblib")
-    joblib.dump(scaler, "Model/semisup_scaler.joblib")
+    joblib.dump(model, "PyLog/Model/semisup_model.joblib")
+    joblib.dump(scaler, "PyLog/Model/semisup_scaler.joblib")
 
     print("[+] Semi-supervised model trained successfully")
+    return True
 
 if __name__ == "__main__":
     train()

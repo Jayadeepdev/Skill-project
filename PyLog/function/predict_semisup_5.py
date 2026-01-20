@@ -30,7 +30,7 @@ def predict():
     
     # BATCHED PREDICTION (CRITICAL FIX)
     
-    BATCH_SIZE = 60000   # safe on most machines
+    BATCH_SIZE = 6000   # safe on most machines
     predictions = []
 
     for i in range(0, len(X_all), BATCH_SIZE):
@@ -40,8 +40,9 @@ def predict():
 
     df["predicted_label"] = predictions
 
-    df.to_csv("Output/semisup_output.csv", index=False)
+    df.to_csv("data/output/semisup_output.csv", index=False)
     print("[+] Semi-supervised prediction complete (batched)")
+    return True
 
 
 
