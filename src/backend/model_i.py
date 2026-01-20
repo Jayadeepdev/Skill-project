@@ -8,10 +8,10 @@ def process_log_file(file_path):
     try:
         # Define where the intermediate signal file will go
         filename = os.path.basename(file_path)
-        inter_dir = os.path.join("data", "intermediate")
+        inter_dir = os.path.join("data", "input")
         os.makedirs(inter_dir, exist_ok=True)
         
-        dest = os.path.join(inter_dir, f"processed_{filename}")
+        dest = os.path.join(inter_dir, "input.log")
         
         # Copy the file to simulate processing
         shutil.copy(file_path, dest)

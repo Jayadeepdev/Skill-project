@@ -1,3 +1,6 @@
 customtkinter
 pandas
 matplotlib
+pandas 
+scikit-learn
+joblib

@@ -1,11 +1,18 @@
 import customtkinter as ctk
 from tkinter import filedialog
-from PIL import Image
+# from PIL import Image
 import os
-import shutil
-import time
+# import shutil
+# import time
 import threading
 
+#PyLog Folder
+from PyLog.function import parse_log_1
+from PyLog.function import prepare_labels_2
+from PyLog.function import features_3
+from PyLog.function import train_semisup_4
+from PyLog.function import predict_semisup_5
+from PyLog.function import train_iforest_6
 # ==========================================================
 # COLOR CONFIGURATION
 # ==========================================================
@@ -57,7 +64,7 @@ class SkillApp(ctk.CTk):
         self.status_lbl = ctk.CTkLabel(self.sidebar, text="STATUS: Idle", text_color="grey", font=("Arial", 10, "italic"))
         self.status_lbl.pack(pady=(0, 5))
 
-        self.btn_upload = ctk.CTkButton(self.sidebar, text="Dataset Upload", height=28, command=self.upload_file)
+        self.btn_upload = ctk.CTkButton(self.sidebar, text="Log Upload", height=28, command=self.upload_file)
         self.btn_upload.pack(pady=2, padx=20)
         self.btn_run = ctk.CTkButton(self.sidebar, text="Run Analysis", height=28, state="disabled", command=self.start_analysis_thread)
         self.btn_run.pack(pady=2, padx=20)
@@ -119,9 +126,39 @@ class SkillApp(ctk.CTk):
 
     def start_analysis_thread(self):
         threading.Thread(target=self._run_analysis).start()
-
     def _run_analysis(self):
         success = self.run_analysis_callback(self.selected_file_path)
+
+        #parse_log_1.py run
+        result = parse_log_1.parser()
+        if result:
+            self.update_feedback("<-- Phase One OK -->\n")
+        
+        #prepare_labels_2.py run
+        result = prepare_labels_2.prepare()
+        if result:
+            self.update_feedback("<-- Phase Two OK -->\n")
+
+        #features_3.py run
+        result=features_3.features()
+        if result:
+            self.update_feedback("<-- Phase Three OK-->\n")
+        
+        #train_semisup_4.py run
+        result = train_semisup_4.train()
+        if result:
+            self.update_feedback("<-- Phase Four OK-->\n")
+
+        #predict_semisup_5 run
+        result = predict_semisup_5.predict()
+        if result:
+            self.update_feedback("<-- Phase five OK -->\n")
+
+        #train_iforest_6 run
+        result = train_iforest_6.iforest()
+        if result:
+            self.update_feedback("<-- Final Phase ok-->\n")
+
         if success:
             self.update_feedback("CONFIRMATION: Analysis complete.")
             self.update_feedback("SUGGESTION: Click 'Show Result' to generate visualizations.")
