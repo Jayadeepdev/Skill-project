@@ -1,4 +1,4 @@
-# Skill Project - UTKAAR
+# Skill Project
 
 A desktop-based log file analyzer.
 
