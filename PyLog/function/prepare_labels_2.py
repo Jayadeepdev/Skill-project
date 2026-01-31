@@ -1,62 +1,46 @@
 import pandas as pd
-
-df = pd.read_csv("PyLog/Csv/parsed/parsed.csv")
-
-ip_counts = df["source_ip"].value_counts()
+import os
+import time
 
 def assign_label(row):
     path = str(row["path"]).lower()
-    attack = str(row["attack_type"]).lower()
+    attack = str(row.get("attack_type", "")).lower()
 
-    if attack in ["sqli", "phpinfo", "xss"]:
-        return 1
+    # Labeling Logic based on Attack Types
+    if attack in ["sqli", "phpinfo", "xss"]: return 1
+    if "?" in path and any(x in path for x in ["'", "--", "union", "select"]): return 9
+    if "=" in path and any(x in path for x in ["sleep", "ls", "cat", "/bin/"]): return 8
+    if "=" in path and any(x in path for x in ["<script", "<>", "%3c"]): return 5
+    if path in ["/", "/style.css"]: return 0
+    return -1
 
-    if "?" in path and any(x in path for x in [
-        "'", "%27", "--", "union", "select",
-        " or ", "%20or%20", " and ", "%20and%20"
-    ]):
-        return 9  #sqli attack
+def prepare():
+    input_path = "PyLog/Csv/parsed/parsed.csv"
+    output_path = "PyLog/Csv/labeled/labeled.csv"
+    
+    # --- SYNCHRONIZATION HANDSHAKE ---
+    # Wait for the OS to finalize the file write from Phase 1
+    retries = 0
+    while (not os.path.exists(input_path) or os.path.getsize(input_path) == 0) and retries < 20:
+        time.sleep(0.5)
+        retries += 1
 
-    if "=" in path and any(x in path for x in [
-        "sleep", "%28", "%29", "ls", "cat", "echo", "/bin/"
-    ]):
-        return 8 #command injuction
+    if not os.path.exists(input_path) or os.path.getsize(input_path) == 0:
+        print("Error: Phase 1 output not found or empty.")
+        return False
 
-    if "=" in path and any(x in path for x in [
-        "<script", "%3cscript", "<>", "<></>"
-    ]):
-        return 5 #xss
+    try:
+        df = pd.read_csv(input_path)
+        df["label"] = df.apply(assign_label, axis=1)
+        
+        # Frequency Logic for DoS detection
+        ip_counts = df["source_ip"].value_counts()
+        df["freq_label"] = df["source_ip"].apply(lambda x: 3 if ip_counts.get(x,0) >= 100 else 0)
 
-    if path in ["/", "/style.css", "/robots.txt", "/favicon.ico"]:
-        return 0 #normal
-
-    return -1  #somting abnormal
-
-
-def freq_score(ip):
-    count = ip_counts.get(ip, 0)
-    if count >= 100:
-        return 3
-    elif count >= 30:
-        return 2
-    elif count >= 10:
-        return 1
-    else:
-        return 0
-def prepare(func=assign_label):
-    df["label"] = df.apply(func, axis=1)
-
-
-    df["freq_label"] = df["source_ip"].apply(freq_score)
-
-    df.to_csv("PyLog/Csv/labeled/labeled.csv", index=False)
-
-    print("Label counts:")
-    print(df["label"].value_counts())
-
-    print("\nFrequency label counts:")
-    print(df["freq_label"].value_counts())
-    return True
-
-if __name__ == "__main__":
-    prepare()
+        os.makedirs(os.path.dirname(output_path), exist_ok=True)
+        df.to_csv(output_path, index=False)
+        print("[+] Phase 2: Labeling complete.")
+        return True
+    except Exception as e:
+        print(f"Phase 2 Error: {e}")
+        return False
