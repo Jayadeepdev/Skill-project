@@ -1,6 +1,6 @@
 customtkinter
 pandas
-seaborn
 matplotlib
+pandas 
 scikit-learn
 joblib
